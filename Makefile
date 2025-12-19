@@ -14,7 +14,7 @@ NAME		:= 	BOOTLOADER
 
 GAME_TITLE	:= DSpico
 GAME_AUTHOR	:= LNH team
-GAME_ICON	:= icon.bmp
+GAME_ICON	:= icon.png
 
 # DLDI and internal SD slot of DSi
 # --------------------------------
@@ -100,7 +100,8 @@ $(ROM): arm9 arm7
 		-b $(GAME_ICON) "$(GAME_FULL_TITLE)" \
 		$(NDSTOOL_ARGS) \
 		-n 1623 1 -n1 2296 24 \
-		-g DSPI
+		-u 00030011 -a 00000010 \
+		-g DSPI 01 "DSPICO"
 
 sdimage:
 	@echo "  MKFATIMG $(SDIMAGE) $(SDROOT)"
