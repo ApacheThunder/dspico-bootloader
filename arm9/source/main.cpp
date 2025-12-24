@@ -10,6 +10,32 @@
 
 #define NTR_CMD_ID_GAME_DISABLE_SCRAMBLING      0xFC00000000000000ull
 
+#define	REG_KEYINPUT	(*(vuint16*)0x04000130)
+#define KEYS_CUR ((~REG_KEYINPUT)&0x3ff)
+
+typedef enum KEYPAD_BITS {
+  KEY_A      = BIT(0),  //!< Keypad A button.
+  KEY_B      = BIT(1),  //!< Keypad B button.
+  KEY_SELECT = BIT(2),  //!< Keypad SELECT button.
+  KEY_START  = BIT(3),  //!< Keypad START button.
+  KEY_RIGHT  = BIT(4),  //!< Keypad RIGHT button.
+  KEY_LEFT   = BIT(5),  //!< Keypad LEFT button.
+  KEY_UP     = BIT(6),  //!< Keypad UP button.
+  KEY_DOWN   = BIT(7),  //!< Keypad DOWN button.
+  KEY_R      = BIT(8),  //!< Right shoulder button.
+  KEY_L      = BIT(9),  //!< Left shoulder button.
+} KEYPAD_BITS;
+
+DTCM_DATA ALIGN(16) const char* PicoBootPath = "fat:/_picoboot.nds";
+DTCM_DATA ALIGN(16) const char* R4BootPath = "fat:/_DS_MENU.DAT";
+DTCM_DATA ALIGN(16) const char* MISC1BootPath = "fat:/MISC1.DAT";
+DTCM_DATA ALIGN(16) const char* MISC2BootPath = "fat:/MISC2.DAT";
+DTCM_DATA ALIGN(16) const char* HomebrewPath = "fat:/boot.nds";
+
+DTCM_DATA ALIGN(16) const char* CurrentBootPath;
+
+DTCM_DATA ALIGN(16) volatile u32 CurrentKey = 0;
+
 /// @brief Switches the DSpico into unscrambled game mode and disables scrambling.
 static void disableScrambling()
 {
@@ -47,9 +73,21 @@ int main(int argc, char* argv[])
     // Boot _picoboot.nds from the DSpico SD card.
     pload_setBootDrive(PLOAD_BOOT_DRIVE_DLDI);
     auto loadParams = pload_getLoadParams();
-    strlcat(loadParams->romPath, "fat:/_picoboot.nds", sizeof(loadParams->romPath));
+	
+	CurrentKey = KEYS_CUR;
+	
+	switch (CurrentKey) {
+		case KEY_A: CurrentBootPath = HomebrewPath; break;
+		case KEY_B: CurrentBootPath = R4BootPath; break;
+		case KEY_START: CurrentBootPath = MISC1BootPath; break;
+		case KEY_SELECT: CurrentBootPath = MISC2BootPath; break;
+		default: CurrentBootPath = PicoBootPath;
+	}
+		
+	strlcat(loadParams->romPath, CurrentBootPath, sizeof(loadParams->romPath));
     loadParams->savePath[0] = 0;
     pload_start();
 
     while(1);
 }
+

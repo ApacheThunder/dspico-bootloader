@@ -7,6 +7,7 @@ out/
 
 # Compiled source #
 ###################
+*.exe
 *.com
 *.class
 *.dll
@@ -47,3 +48,9 @@ Thumbs.db
 *.elf
 *.a
 .vscode/
+
+# Other
+######################
+*.rom
+*.json
+*.dldi
